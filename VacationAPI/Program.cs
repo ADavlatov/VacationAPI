@@ -1,14 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
-using VacationAPI.Authentication;
-using VacationAPI.Authentication.Post;
 using VacationAPI.Context;
-using VacationAPI.Entities;
-using VacationAPI.Queries.Employees.Get;
-using VacationAPI.Queries.Employees.Post;
-using VacationAPI.Queries.Employees.Put;
-using VacationAPI.Services;
+using VacationAPI.Request.Authentication;
+using VacationAPI.Request.Authentication.Get;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,13 +44,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//@TODO подключить fluent validator
 //@TODO добавить получение диаграмм со статистикой через https://github.com/image-charts/c-sharp
+//@TODO добавить возможность перемещать сотрудников из одной команды в другую
+//@TODO убрать employeePosition отовсюду
 
 //регистрация пользователя. Добавление в бд
 app.MapPost("/api/auth/sign-in/{username}/{password}", (ApplicationContext db, string username, string password) =>
 {
-	return NewUser.AddNewUser(db, username, password);
+	return VacationAPI.Authentication.Post.User.AddNewUser(db, username, password);
 });
 
 //получение токена
@@ -70,176 +64,160 @@ app.MapGet("/api/auth/token/{username}/{password}", (ApplicationContext db, stri
 app.MapPost("api/teams/newteam/{teamName}/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string username, string access_token) =>
 	{
-		return NewTeam.AddNewTeam(db, teamName, username, access_token);
+		return VacationAPI.Request.Teams.Post.NewTeam.AddNewTeam(db, teamName, username, access_token);
 	});
 
 //Получение списка всех команд пользователя
 app.MapGet("api/teams/{username}/{access_token}",
 	(ApplicationContext db, string username, string access_token) =>
 	{
-		return Teams.GetTeams(db, username, access_token);
+		return VacationAPI.Request.Teams.Get.Teams.GetTeams(db, username, access_token);
 	});
 
-//Получение диаграммы со статистикой команды
+//Получение диаграммы со статистикой всех команд (одна диаграмма для всех команд)
+app.MapGet("api/teams/general/stats/{username}/{access_token}",
+	(ApplicationContext db, string username, string access_token) =>
+	{
+		//@TODO добавить диаграммы и доделать
+	});
+
+//Получение диаграмм со статистикой всех команд (диаграмма для каждой команды)
 app.MapGet("api/teams/stats/{username}/{access_token}",
 	(ApplicationContext db, string username, string access_token) =>
 	{
-
+		//@TODO добавить диаграммы и доделать
 	});
 
 //Получение статистики отдельной команды
 app.MapGet("api/teams/team/{teamName}/stats/{username}/{access_token}",
 	(ApplicationContext db, string username, string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token) && db.Users.FirstOrDefault(x => x.Name == username) != null)
-		{
-		}
+		//@TODO добавить диаграммы и доделать
 	});
 
 //Изменение название команды
 app.MapPut("api/teams/team/{teamName}/{newTeamName}/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string newTeamName, string username, string access_token) =>
 	{
-		return TeamName.EditTeamName(db, teamName, newTeamName, username, access_token);
+		return VacationAPI.Request.Teams.Put.TeamName.EditTeamName(db, teamName, newTeamName, username, access_token);
 	});
 
+//удаление команды
 app.MapDelete("api/teams/team/{teamName}/{username}/{accessToken}",
 	(ApplicationContext db, string teamName, string username, string accessToken) =>
 	{
-		if (JwtToken.CheckJwtToken(username, accessToken) && db.Users.FirstOrDefault(x => x.Name == username) != null)
-		{
-			db.Teams.Remove(db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName));
-
-			db.SaveChanges();
-		}
+		return VacationAPI.Request.Teams.Delete.Team.RemoveTeam(db, teamName, username, accessToken);
 	});
 
+//добавление работника
 app.MapPost("api/teams/{teamName}/employees/newemployee/{employeeName}/{employeePosition}/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string employeeName, string employeePosition, string username,
 	string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token)
-			&& db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName) != null)
-		{
-			db.Employees.Add(new()
-			{
-				Team = db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName)!,
-				Name = employeeName,
-				Position = employeePosition
-			});
-
-			db.SaveChanges();
-		}
+		return VacationAPI.Request.Employees.Post.Employee.AddNewEmployee(db, teamName, employeeName, employeePosition, username,
+			access_token);
 	});
 
+//получение списка работников команды
 app.MapGet("api/teams/{teamName}/employees/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string username,
 	string access_token) =>
 	{
+		return VacationAPI.Request.Employees.Get.Employees.GetEmployees(db, teamName, username, access_token);
 	});
 
+//получение диаграмм со статистикой всех работников команды
+app.MapGet("api/teams/{teamName}/employees/stats/{username}/{access_token}",
+	(ApplicationContext db, string teamName, string username,
+	string access_token) =>
+	{
+		//@TODO добавить диаграммы и доделать
+	});
+
+//получение статистики конкретного работника
 app.MapGet("api/teams/{teamName}/employees/employee/{employeeName}/stats/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string username,
 	string access_token) =>
 	{
+		//@TODO добавить диаграммы и доделать
 	});
 
+//изменение имени работника
 app.MapPut("api/teams/{teamName}/employees/employee/{employeeName}/{newEmployeeName}/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string employeeName, string newEmployeeName, string username,
 	string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token)
-			&& db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName) != null)
-		{
-		}
+		return VacationAPI.Request.Employees.Put.EmployeeName.EditEmployeeName(db, teamName, employeeName, newEmployeeName, username,
+			access_token);
 	});
 
+//изменение должности работника
 app.MapPut("api/teams/{teamName}/employees/employee/{employeeName}/{newEmployeePosition}/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string employeeName, string newEmployeePosition, string username,
 	string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token)
-			&& db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName) != null)
-		{
-		}
+		return VacationAPI.Request.Employees.Put.EmployeePosition.EditEmployeePosition(db, teamName, employeeName, newEmployeePosition,
+			username, access_token);
 	});
 
+//удаление работника
 app.MapDelete("api/teams/{teamName}/employees/employee/{employeeName}/{username}/{access_token}",
 	(ApplicationContext db, string teamName, string employeeName, string username,
 	string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token)
-			&& db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName) != null)
-		{
-			db.Employees.Remove(db.Employees.FirstOrDefault(x => x.Team.Name == teamName && x.Name == employeeName));
-			db.SaveChanges();
-		}
+		return VacationAPI.Request.Employees.Delete.Employee.RemoveEmployee(db, teamName, employeeName, username, access_token);
 	});
 
+//Добавление отпуска сотруднику
 app.MapPost(
 	"api/teams/{teamName}/employees/{employeeName}/vacations/newvacation/{vacationDateStart}/{vacationDateEnd}/{username}/{access_token}", (
 		ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string vacationDateEnd,
 		string username,
 		string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token)
-			&& db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName) != null
-			&& db.Employees.FirstOrDefault(x => x.Name == employeeName) != null)
-		{
-			db.Vacations.Add(new()
-			{
-				Employee = db.Employees.FirstOrDefault(x => x.Name == employeeName),
-				StartOfVacation = DateOnly.Parse(vacationDateStart),
-				EndOfVacation = DateOnly.Parse(vacationDateEnd)
-			});
-
-			db.SaveChanges();
-		}
+		return VacationAPI.Request.Vacations.Post.Vacation.AddNewVacation(db, teamName, employeeName, vacationDateStart, vacationDateEnd,
+			username, access_token);
 	});
 
+//список отпусков работника
 app.MapGet("api/teams/{teamName}/employees/{employeeName}/vacations/{username}/{access_token}", (
 	ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string username,
 	string access_token) =>
 {
-	if (JwtToken.CheckJwtToken(username, access_token))
-	{
-	}
+	return VacationAPI.Request.Vacations.Get.Employee.GetVacations(db, teamName, employeeName, vacationDateStart, username,
+		access_token);
 });
 
+//изменение начала отпуска сотрудника
 app.MapPut(
 	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{newVacationDateStart}/{username}/{access_token}",
-	(ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string username,
+	(ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string newVacationDateStart,
+	string username,
 	string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token))
-		{
-		}
+		return VacationAPI.Request.Vacations.Put.VacationStart.EditVacationStart(db, teamName, employeeName, vacationDateStart,
+			newVacationDateStart, username, access_token);
 	});
 
+//изменение конца отпуска сотрудника
 app.MapPut(
 	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{newVacationDateEnd}/{username}/{access_token}", (
-		ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string username,
+		ApplicationContext db, string teamName, string employeeName, string vacationDateEnd,
+		string newVacationDateEnd, string username,
 		string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token))
-		{
-		}
+		return VacationAPI.Request.Vacations.Put.VacationEnd.EditVacationEnd(db, teamName, employeeName, vacationDateEnd,
+			newVacationDateEnd, username, access_token);
 	});
 
+//удаление отпуска сотрудника
 app.MapDelete(
 	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{vacationDateEnd}/{username}/{access_token}", (
 		ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string username,
 		string access_token) =>
 	{
-		if (JwtToken.CheckJwtToken(username, access_token))
-		{
-			db.Vacations.Remove(db.Vacations.FirstOrDefault(x =>
-				x.Employee.Name == employeeName
-				&& x.StartOfVacation == DateOnly.Parse(vacationDateStart)
-				&& db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName) != null)!);
-
-			db.SaveChanges();
-		}
+		return VacationAPI.Request.Vacations.Delete.Vacation.RemoveVacation(db, teamName, employeeName, vacationDateStart, username,
+			access_token);
 	});
 
 app.Run();
