@@ -9,8 +9,7 @@ public class VacationEnd
 											string newVacationDateEnd, string username,
 											string accessToken)
 	{
-		if (JwtToken.CheckJwtToken(username, accessToken)
-			&& db.Vacations.FirstOrDefault(x =>
+		if (db.Vacations.FirstOrDefault(x =>
 				x.StartOfVacation == DateOnly.Parse(vacationDateEnd)
 				&& x.Employee.Name == employeeName
 				&& x.Employee.Team.Name == teamName
@@ -27,11 +26,6 @@ public class VacationEnd
 			};
 
 			return Results.Json(response);
-		}
-
-		if (!JwtToken.CheckJwtToken(username, accessToken))
-		{
-			Results.Json("Неверный access_token");
 		}
 
 		return Results.Json("");

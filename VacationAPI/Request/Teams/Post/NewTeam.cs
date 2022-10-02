@@ -7,7 +7,7 @@ public class NewTeam
 {
 	public static IResult AddNewTeam(ApplicationContext db, string teamName, string username, string accessToken)
 	{
-		if (JwtToken.CheckJwtToken(username, accessToken) && db.Users.FirstOrDefault(x => x.Name == username) != null && db.Teams.FirstOrDefault(x => x.Name == teamName) == null)
+		if (db.Users.FirstOrDefault(x => x.Name == username) != null && db.Teams.FirstOrDefault(x => x.Name == teamName) == null)
 		{
 			db.Teams.Add(new()
 			{
@@ -24,10 +24,6 @@ public class NewTeam
 			};
 
 			return Results.Json(response);
-		}
-		if (!JwtToken.CheckJwtToken(username, accessToken))
-		{
-			Results.Json("Неверный access_token");
 		}
 
 		return Results.Json("Команда с таким именем уже существует");

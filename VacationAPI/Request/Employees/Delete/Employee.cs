@@ -9,7 +9,7 @@ public class Employee
 	{
 		var employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username);
 
-		if (JwtToken.CheckJwtToken(username, accessToken) && employee != null)
+		if (employee != null)
 		{
 			db.Employees.Remove(employee);
 			db.SaveChanges();

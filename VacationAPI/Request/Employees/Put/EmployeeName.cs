@@ -12,8 +12,7 @@ public class EmployeeName
 		var employee =
 			db.Employees.FirstOrDefault(x => x.Name == oldEmployeeName && x.Team.Name == teamName && x.Team.User.Name == username);
 
-		if (JwtToken.CheckJwtToken(username, accessToken)
-			&& employee != null)
+		if (employee != null)
 		{
 			employee.Name = newEmployeeName;
 			db.SaveChanges();
@@ -26,11 +25,6 @@ public class EmployeeName
 			};
 
 			return Results.Json(response);
-		}
-
-		if (!JwtToken.CheckJwtToken(username, accessToken))
-		{
-			Results.Json("Неверный access_token");
 		}
 
 		return Results.Json("Работника с таким именем не существует");

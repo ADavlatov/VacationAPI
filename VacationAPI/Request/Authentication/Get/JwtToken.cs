@@ -25,20 +25,6 @@ public class JwtToken
 		return Results.Json("Неверный логин или пароль");
 	}
 
-	public static bool CheckJwtToken(string username, string jwtToken)
-	{
-		JwtSecurityToken jwt = new JwtSecurityToken(jwtToken);
-
-		if (username
-			== jwt.Claims.First()
-				.Value)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	private static JwtSecurityToken GenerateToken(ApplicationContext db, string username, string password)
 	{
 		return new(issuer: AuthOptions.ISSUER,

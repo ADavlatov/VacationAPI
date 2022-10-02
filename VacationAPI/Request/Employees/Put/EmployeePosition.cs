@@ -6,14 +6,13 @@ namespace VacationAPI.Request.Employees.Put;
 public class EmployeePosition
 {
 	public static IResult EditEmployeePosition(ApplicationContext db, string teamName, string employeeName, string newEmployeePosition,
-											string username,
-											string accessToken)
+												string username,
+												string accessToken)
 	{
 		var employee =
 			db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username);
 
-		if (JwtToken.CheckJwtToken(username, accessToken)
-			&& employee != null)
+		if (employee != null)
 		{
 			employee.Position = newEmployeePosition;
 			db.SaveChanges();
@@ -26,11 +25,6 @@ public class EmployeePosition
 			};
 
 			return Results.Json(response);
-		}
-
-		if (!JwtToken.CheckJwtToken(username, accessToken))
-		{
-			Results.Json("Неверный access_token");
 		}
 
 		return Results.Json("Работника с таким именем не существует");

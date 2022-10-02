@@ -13,8 +13,7 @@ public class Vacation
 
 		if (DateOnly.TryParse(vacationDateStart, out vacationStart) && DateOnly.TryParse(vacationDateEnd, out vacationEnd))
 		{
-			if (JwtToken.CheckJwtToken(username, accessToken)
-				&& db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username)
+			if (db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username)
 				!= null)
 			{
 				db.Vacations.Add(new()
@@ -23,9 +22,6 @@ public class Vacation
 					EndOfVacation = vacationEnd,
 					Employee = db.Employees.FirstOrDefault(x => x.Name == employeeName)
 				});
-			} else if (!JwtToken.CheckJwtToken(username, accessToken))
-			{
-				Results.Json("Неверный access_token");
 			} else
 			{
 				return Results.Json("Пользователь или команда с таким именем не существуют");
