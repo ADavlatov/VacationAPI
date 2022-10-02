@@ -1,8 +1,8 @@
-using VacationAPI.Authentication;
 using VacationAPI.Context;
 using VacationAPI.Entities;
+using VacationAPI.Request.Authentication.Get;
 
-namespace VacationAPI.Queries.Employees.Get;
+namespace VacationAPI.Request.Teams.Get;
 
 public class Teams
 {

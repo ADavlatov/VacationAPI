@@ -1,4 +1,4 @@
-namespace VacationAPI.Queries.Employees.Get;
+namespace VacationAPI.Request.Teams.Get;
 
 public class TeamStats
 {

@@ -1,7 +1,7 @@
-using VacationAPI.Authentication;
 using VacationAPI.Context;
+using VacationAPI.Request.Authentication.Get;
 
-namespace VacationAPI.Queries.Employees.Put;
+namespace VacationAPI.Request.Teams.Put;
 
 public class TeamName
 {
