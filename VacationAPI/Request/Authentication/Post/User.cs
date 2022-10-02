@@ -3,7 +3,7 @@ using VacationAPI.Services;
 
 namespace VacationAPI.Authentication.Post;
 
-public class NewUser
+public class User
 {
 	public static IResult AddNewUser(ApplicationContext db, string username, string password)
 	{
