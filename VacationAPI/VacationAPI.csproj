@@ -23,15 +23,7 @@
       <Folder Include="Controllers" />
       <Folder Include="Database" />
       <Folder Include="Interfaces" />
-      <Folder Include="Queries\Employees\Delete" />
-      <Folder Include="Queries\Teams\Delete" />
-      <Folder Include="Queries\Teams\Get" />
-      <Folder Include="Queries\Teams\Post" />
-      <Folder Include="Queries\Teams\Put" />
-      <Folder Include="Queries\Vacations\Delete" />
-      <Folder Include="Queries\Vacations\Get" />
-      <Folder Include="Queries\Vacations\Post" />
-      <Folder Include="Queries\Vacations\Put" />
+      <Folder Include="Request\Teams" />
     </ItemGroup>
 
 </Project>
