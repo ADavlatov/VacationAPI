@@ -1,11 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using VacationAPI.Authentication;
 using VacationAPI.Context;
 using VacationAPI.Entities;
 using VacationAPI.Services;
 
-namespace VacationAPI.Authentication;
+namespace VacationAPI.Request.Authentication.Get;
 
 public class JwtToken
 {

@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace VacationAPI.Authentication;
+namespace VacationAPI.Request.Authentication;
 
 public class AuthOptions
 {
