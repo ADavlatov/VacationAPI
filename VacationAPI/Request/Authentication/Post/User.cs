@@ -1,5 +1,7 @@
 using VacationAPI.Context;
+using VacationAPI.Entities;
 using VacationAPI.Services;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Authentication.Post;
 
@@ -12,7 +14,8 @@ public class User
 			db.Users.Add(new()
 			{
 				Name = username,
-				Password = MD5Hash.GetHashedString(password)
+				Password = MD5Hash.GetHashedString(password),
+				Teams = new()
 			});
 			db.SaveChanges();
 

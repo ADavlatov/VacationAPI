@@ -1,5 +1,7 @@
 using VacationAPI.Context;
+using VacationAPI.Entities;
 using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Teams.Put;
 
@@ -7,10 +9,13 @@ public class TeamName
 {
 	public static IResult EditTeamName(ApplicationContext db, string teamName, string newTeamName, string username, string accessToken)
 	{
-		if (db.Users.FirstOrDefault(x => x.Name == username && x.Teams.FirstOrDefault(x => x.Name == newTeamName) == null) != null)
+		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, newTeamName: newTeamName);
+		Team team = db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName && x.Name != newTeamName);
+
+		if (team != null && request == null)
 		{
-			var team = db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName);
 			team.Name = newTeamName;
+			db.SaveChanges();
 
 			var response = new
 			{
@@ -21,6 +26,6 @@ public class TeamName
 			return Results.Json(response);
 		}
 
-		return Results.Json("Команда с таким именем уже существует");
+		return request;
 	}
 }

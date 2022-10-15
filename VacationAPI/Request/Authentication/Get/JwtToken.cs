@@ -12,7 +12,7 @@ public class JwtToken
 {
 	public static IResult GetJwtToken(ApplicationContext db, string username, string password)
 	{
-		if (GetClaims(db, username, MD5Hash.GetHashedString(password)).Claims != null)
+		if (db.Users.FirstOrDefault(x => x.Name == username && x.Password == MD5Hash.GetHashedString(password)) != null)
 		{
 			var response = new
 			{
@@ -37,7 +37,7 @@ public class JwtToken
 
 	private static ClaimsIdentity GetClaims(ApplicationContext db, string username, string password)
 	{
-		User user = db.Users.FirstOrDefault(x => x.Name == username && x.Password == password);
+		User? user = db.Users.FirstOrDefault(x => x.Name == username && x.Password == password);
 
 		if (user != null)
 		{

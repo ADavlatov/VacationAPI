@@ -1,33 +1,34 @@
 using VacationAPI.Context;
 using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Vacations.Post;
 
 public class Vacation
 {
-	public static IResult AddNewVacation(ApplicationContext db, string teamName, string employeeName, string vacationDateStart,
+	public static IResult? AddNewVacation(ApplicationContext db, string teamName, string employeeName, string vacationDateStart,
 										string vacationDateEnd, string username, string accessToken)
 	{
-		DateOnly vacationStart;
-		DateOnly vacationEnd;
+		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, employeeName: employeeName,
+			newVacationDateStart: vacationDateStart, newVacationDateEnd: vacationDateEnd);
 
-		if (DateOnly.TryParse(vacationDateStart, out vacationStart) && DateOnly.TryParse(vacationDateEnd, out vacationEnd))
+		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.User.Name == username);
+
+		if (employee != null && request == null)
 		{
-			if (db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username)
-				!= null)
+			Console.WriteLine(db.Vacations.Count());
+			db.Vacations.Add(new()
 			{
-				db.Vacations.Add(new()
-				{
-					StartOfVacation = vacationStart,
-					EndOfVacation = vacationEnd,
-					Employee = db.Employees.FirstOrDefault(x => x.Name == employeeName)
-				});
-			} else
-			{
-				return Results.Json("Пользователь или команда с таким именем не существуют");
-			}
+				StartOfVacation = DateOnly.Parse(vacationDateStart),
+				EndOfVacation = DateOnly.Parse(vacationDateEnd),
+				Employee = employee
+			});
+
+			db.SaveChanges();
+
+			return Results.Json($"Отпуск с началом {vacationDateStart} и концом {vacationDateEnd} создан");
 		}
 
-		return Results.Json("Неправильный формат даты");
+		return request;
 	}
 }

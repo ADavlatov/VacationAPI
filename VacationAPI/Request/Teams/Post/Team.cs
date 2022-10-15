@@ -1,17 +1,22 @@
 using VacationAPI.Context;
+using VacationAPI.Entities;
 using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Teams.Post;
 
-public class NewTeam
+public class Team
 {
 	public static IResult AddNewTeam(ApplicationContext db, string teamName, string username, string accessToken)
 	{
-		if (db.Users.FirstOrDefault(x => x.Name == username) != null && db.Teams.FirstOrDefault(x => x.Name == teamName) == null)
+		var request = Manager.CheckRequest(db, username, accessToken, newTeamName: teamName);
+		User user = db.Users.FirstOrDefault(x => x.Name == username);
+
+		if (user != null && request == null)
 		{
 			db.Teams.Add(new()
 			{
-				User = db.Users.FirstOrDefault(x => x.Name == username),
+				User = user,
 				Name = teamName
 			});
 
@@ -26,6 +31,6 @@ public class NewTeam
 			return Results.Json(response);
 		}
 
-		return Results.Json("Команда с таким именем уже существует");
+		return request;
 	}
 }

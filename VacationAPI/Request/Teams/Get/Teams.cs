@@ -1,21 +1,30 @@
 using VacationAPI.Context;
 using VacationAPI.Entities;
-using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Teams.Get;
 
 public class Teams
 {
-	public static IResult GetTeams(ApplicationContext db, string username, string accessToken)
+	public static IResult? GetTeams(ApplicationContext db, string username, string accessToken)
 	{
-		if (db.Users.FirstOrDefault(x => x.Name == username && x.Teams.Any()) != null)
+		var request = Manager.CheckRequest(db, username, accessToken);
+		User user = db.Users.FirstOrDefault(x => x.Name == username);
+
+		if (db.Teams.FirstOrDefault(x => x.User == user) == null)
 		{
-			User user = db.Users.FirstOrDefault(x => x.Name == username);
-			string teams = string.Join(", ", user.Teams);
+			Results.Json("Список команд пуст");
+		}
+		if (user != null && request == null)
+		{
+			var userTeams = from team in db.Teams
+							where team.User == user
+							select team.Name;
+			string teams = string.Join(", ", userTeams);
 
 			return Results.Json(teams);
 		}
 
-		return Results.Json("Список команд пуст");
+		return request;
 	}
 }

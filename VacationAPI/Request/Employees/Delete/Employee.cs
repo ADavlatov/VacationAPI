@@ -1,15 +1,17 @@
 using VacationAPI.Context;
 using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Employees.Delete;
 
 public class Employee
 {
-	public static IResult RemoveEmployee(ApplicationContext db, string teamName, string employeeName, string username, string accessToken)
+	public static IResult? RemoveEmployee(ApplicationContext db, string teamName, string employeeName, string username, string accessToken)
 	{
-		var employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username);
+		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, employeeName: employeeName);
+		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName);
 
-		if (employee != null)
+		if (employee != null && request == null)
 		{
 			db.Employees.Remove(employee);
 			db.SaveChanges();
@@ -17,6 +19,6 @@ public class Employee
 			return Results.Json($"Работник {employeeName} удален");
 		}
 
-		return Results.Json("Работника или команды с таким именем не существует");
+		return request;
 	}
 }

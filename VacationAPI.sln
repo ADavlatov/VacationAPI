@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationAPI", "VacationAPI\VacationAPI.csproj", "{1765D964-A39B-4EF4-AFFB-B9CA4617B45E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationAPI.Tests", "VacationAPI.Tests\VacationAPI.Tests.csproj", "{1F564B01-B5DC-4FEA-BFED-270309D2539E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{1765D964-A39B-4EF4-AFFB-B9CA4617B45E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1765D964-A39B-4EF4-AFFB-B9CA4617B45E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1765D964-A39B-4EF4-AFFB-B9CA4617B45E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F564B01-B5DC-4FEA-BFED-270309D2539E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F564B01-B5DC-4FEA-BFED-270309D2539E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F564B01-B5DC-4FEA-BFED-270309D2539E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F564B01-B5DC-4FEA-BFED-270309D2539E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using VacationAPI.Context;
-using VacationAPI.Entities;
-using VacationAPI.Request;
 using VacationAPI.Request.Authentication;
 using VacationAPI.Request.Authentication.Get;
-using VacationAPI.Validation;
-using VacationAPI.Validation.ValidationParameters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,11 +49,6 @@ app.MapControllers();
 //@TODO добавить возможность перемещать сотрудников из одной команды в другую
 //@TODO убрать employeePosition отовсюду
 
-RequestValidator _requestValidator;
-EmployeeValidator _employeeValidator;
-TeamValidator _teamValidator;
-DateValidator _dateValidator;
-
 //регистрация пользователя. Добавление в бд
 app.MapPost("/api/auth/sign-in/{username}/{password}", (ApplicationContext db, string username, string password) =>
 {
@@ -71,550 +62,160 @@ app.MapGet("/api/auth/token/{username}/{password}", (ApplicationContext db, stri
 });
 
 //Создание новой команды
-app.MapPost("api/teams/newteam/{teamName}/{username}/{access_token}",
-	(ApplicationContext db, string teamName, string username, string access_token) =>
+app.MapPost("api/teams/newteam/{teamName}/{username}/{accessToken}",
+	(ApplicationContext db, string teamName, string username, string accessToken) =>
 	{
-		_requestValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		if (request.IsValid)
-		{
-			return VacationAPI.Request.Teams.Post.NewTeam.AddNewTeam(db, teamName, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Teams.Post.Team.AddNewTeam(db, teamName, username, accessToken);
 	});
 
 //Получение списка всех команд пользователя
-app.MapGet("api/teams/{username}/{access_token}",
-	(ApplicationContext db, string username, string access_token) =>
+app.MapGet("api/teams/{username}/{accessToken}",
+	(ApplicationContext db, string username, string accessToken) =>
 	{
-		_requestValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		if (request.IsValid)
-		{
-			return VacationAPI.Request.Teams.Get.Teams.GetTeams(db, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Teams.Get.Teams.GetTeams(db, username, accessToken);
 	});
 
 //Получение диаграммы со статистикой всех команд (одна диаграмма для всех команд)
-app.MapGet("api/teams/general/stats/{username}/{access_token}",
-	(ApplicationContext db, string username, string access_token) =>
+app.MapGet("api/teams/general/stats/{username}/{accessToken}",
+	(ApplicationContext db, string username, string accessToken) =>
 	{
 		//@TODO добавить диаграммы и доделать
 	});
 
 //Получение диаграмм со статистикой всех команд (диаграмма для каждой команды)
-app.MapGet("api/teams/stats/{username}/{access_token}",
-	(ApplicationContext db, string username, string access_token) =>
+app.MapGet("api/teams/stats/{username}/{accessToken}",
+	(ApplicationContext db, string username, string accessToken) =>
 	{
 		//@TODO добавить диаграммы и доделать
 	});
 
 //Получение статистики отдельной команды
-app.MapGet("api/teams/team/{teamName}/stats/{username}/{access_token}",
-	(ApplicationContext db, string username, string access_token) =>
+app.MapGet("api/teams/team/{teamName}/stats/{username}/{accessToken}",
+	(ApplicationContext db, string username, string accessToken) =>
 	{
 		//@TODO добавить диаграммы и доделать
 	});
 
 //Изменение название команды
-app.MapPut("api/teams/team/{teamName}/{newTeamName}/{username}/{access_token}",
-	(ApplicationContext db, string teamName, string newTeamName, string username, string access_token) =>
+app.MapPut("api/teams/team/{teamName}/{newTeamName}/{username}/{accessToken}",
+	(ApplicationContext db, string teamName, string newTeamName, string username, string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		if (request.IsValid && team.IsValid)
-		{
-			return VacationAPI.Request.Teams.Put.TeamName.EditTeamName(db, teamName, newTeamName, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Teams.Put.TeamName.EditTeamName(db, teamName, newTeamName, username, accessToken);
 	});
 
 //удаление команды
-app.MapDelete("api/teams/team/{teamName}/{username}/{access_token}",
-	(ApplicationContext db, string teamName, string username, string access_token) =>
+app.MapDelete("api/teams/team/{teamName}/{username}/{accessToken}",
+	(ApplicationContext db, string teamName, string username, string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		if (request.IsValid && team.IsValid)
-		{
-			return VacationAPI.Request.Teams.Delete.Team.RemoveTeam(db, teamName, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Teams.Delete.Team.RemoveTeam(db, teamName, username, accessToken);
 	});
 
 //добавление работника
-app.MapPost("api/teams/{teamName}/employees/newemployee/{employeeName}/{employeePosition}/{username}/{access_token}",
-	(ApplicationContext db, string teamName, string employeeName, string employeePosition, string username,
-	string access_token) =>
+app.MapPost("api/teams/{teamName}/employees/newemployee/{employeeName}/{username}/{accessToken}",
+	(ApplicationContext db, string teamName, string employeeName, string username,
+	string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		if (request.IsValid && team.IsValid)
-		{
-			return VacationAPI.Request.Employees.Post.Employee.AddNewEmployee(db, teamName, employeeName, employeePosition, username,
-				access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Employees.Post.Employee.AddNewEmployee(db, teamName, employeeName, username,
+			accessToken);
 	});
 
 //получение списка работников команды
-app.MapGet("api/teams/{teamName}/employees/{username}/{access_token}",
+app.MapGet("api/teams/{teamName}/employees/{username}/{accessToken}",
 	(ApplicationContext db, string teamName, string username,
-	string access_token) =>
+	string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		if (request.IsValid && team.IsValid)
-		{
-			return VacationAPI.Request.Employees.Get.Employees.GetEmployees(db, teamName, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Employees.Get.Employees.GetEmployees(db, teamName, username, accessToken);
 	});
 
 //получение диаграмм со статистикой всех работников команды
-app.MapGet("api/teams/{teamName}/employees/stats/{username}/{access_token}",
+app.MapGet("api/teams/{teamName}/employees/stats/{username}/{accessToken}",
 	(ApplicationContext db, string teamName, string username,
-	string access_token) =>
+	string accessToken) =>
 	{
 		//@TODO добавить диаграммы и доделать
 	});
 
 //получение статистики конкретного работника
-app.MapGet("api/teams/{teamName}/employees/employee/{employeeName}/stats/{username}/{access_token}",
+app.MapGet("api/teams/{teamName}/employees/employee/{employeeName}/stats/{username}/{accessToken}",
 	(ApplicationContext db, string teamName, string username,
-	string access_token) =>
+	string accessToken) =>
 	{
 		//@TODO добавить диаграммы и доделать
 	});
 
 //изменение имени работника
-app.MapPut("api/teams/{teamName}/employees/employee/{employeeName}/{newEmployeeName}/{username}/{access_token}",
+app.MapPut("api/teams/{teamName}/employees/employee/{employeeName}/{newEmployeeName}/{username}/{accessToken}",
 	(ApplicationContext db, string teamName, string employeeName, string newEmployeeName, string username,
-	string access_token) =>
+	string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-		_employeeValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		var employee = _employeeValidator.Validate(new EmployeeNameParameter
-		{
-			EmployeeName = employeeName
-		});
-
-		if (request.IsValid && team.IsValid && employee.IsValid)
-		{
-			return VacationAPI.Request.Employees.Put.EmployeeName.EditEmployeeName(db, teamName, employeeName, newEmployeeName, username,
-				access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors),
-			employeeErrors = string.Join("\r\n", employee.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Employees.Put.EmployeeName.EditEmployeeName(db, teamName, employeeName, newEmployeeName, username,
+			accessToken);
 	});
 
 //удаление работника
-app.MapDelete("api/teams/{teamName}/employees/employee/{employeeName}/{username}/{access_token}",
+app.MapDelete("api/teams/{teamName}/employees/employee/{employeeName}/{username}/{accessToken}",
 	(ApplicationContext db, string teamName, string employeeName, string username,
-	string access_token) =>
+	string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-		_employeeValidator = new(db);
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		var employee = _employeeValidator.Validate(new EmployeeNameParameter
-		{
-			EmployeeName = employeeName
-		});
-
-		if (request.IsValid && team.IsValid && employee.IsValid)
-		{
-			return VacationAPI.Request.Employees.Delete.Employee.RemoveEmployee(db, teamName, employeeName, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors),
-			employeeErrors = string.Join("\r\n", employee.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Employees.Delete.Employee.RemoveEmployee(db, teamName, employeeName, username, accessToken);
 	});
 
 //Добавление отпуска сотруднику
 app.MapPost(
-	"api/teams/{teamName}/employees/{employeeName}/vacations/newvacation/{vacationDateStart}/{vacationDateEnd}/{username}/{access_token}", (
+	"api/teams/{teamName}/employees/{employeeName}/vacations/newvacation/{vacationDateStart}/{vacationDateEnd}/{username}/{accessToken}", (
 		ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string vacationDateEnd,
 		string username,
-		string access_token) =>
+		string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-		_employeeValidator = new(db);
-		_dateValidator = new();
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		var employee = _employeeValidator.Validate(new EmployeeNameParameter
-		{
-			EmployeeName = employeeName
-		});
-
-		var dateStart = _dateValidator.Validate(new DateParameter
-		{
-			VacationDate = vacationDateStart
-		});
-
-		var dateEnd = _dateValidator.Validate(new DateParameter
-		{
-			VacationDate = vacationDateEnd
-		});
-
-		if (request.IsValid && team.IsValid && employee.IsValid && dateStart.IsValid && dateEnd.IsValid)
-		{
-			return VacationAPI.Request.Vacations.Post.Vacation.AddNewVacation(db, teamName, employeeName, vacationDateStart,
-				vacationDateEnd,
-				username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors),
-			employeeErrors = string.Join("\r\n", employee.Errors),
-			dateStartErrors = string.Join("\r\n", dateStart.Errors),
-			dateEndErrors = string.Join("\r\n", dateEnd.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Vacations.Post.Vacation.AddNewVacation(db, teamName, employeeName, vacationDateStart,
+			vacationDateEnd,
+			username, accessToken);
 	});
 
+//@TODO сделать вывод даты начала и даты окончания каждого отпуска
 //список отпусков работника
-app.MapGet("api/teams/{teamName}/employees/{employeeName}/vacations/{username}/{access_token}", (
-	ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string username,
-	string access_token) =>
+app.MapGet("api/teams/{teamName}/employees/{employeeName}/vacations-count/{username}/{accessToken}", (
+	ApplicationContext db, string teamName, string employeeName, string username,
+	string accessToken) =>
 {
-	_requestValidator = new(db);
-	_teamValidator = new(db);
-	_employeeValidator = new(db);
-
-	var request = _requestValidator.Validate(new Request
-	{
-		Username = username,
-		AccessToken = access_token
-	});
-
-	var team = _teamValidator.Validate(new TeamNameParameter
-	{
-		TeamName = teamName
-	});
-
-	var employee = _employeeValidator.Validate(new EmployeeNameParameter
-	{
-		EmployeeName = employeeName
-	});
-
-	if (request.IsValid && team.IsValid && employee.IsValid)
-	{
-		return VacationAPI.Request.Vacations.Get.Employee.GetVacations(db, teamName, employeeName, vacationDateStart, username,
-			access_token);
-	}
-
-	var errorsResponse = new
-	{
-		requestErrors = string.Join("\r\n", request.Errors),
-		teamErrors = string.Join("\r\n", team.Errors),
-		employeeErrors = string.Join("\r\n", employee.Errors)
-	};
-
-	return Results.Json(errorsResponse);
+	return VacationAPI.Request.Vacations.Get.Employee.GetVacations(db, teamName, employeeName, username,
+		accessToken);
 });
 
 //изменение начала отпуска сотрудника
 app.MapPut(
-	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{newVacationDateStart}/{username}/{access_token}",
-	(ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string newVacationDateStart,
+	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{vacationDateEnd}/vacationDateStart/{newDate}/{username}/{accessToken}",
+	(ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string vacationDateEnd,
+	string newDate,
 	string username,
-	string access_token) =>
+	string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-		_employeeValidator = new(db);
-		_dateValidator = new();
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		var employee = _employeeValidator.Validate(new EmployeeNameParameter
-		{
-			EmployeeName = employeeName
-		});
-
-		var dateStart = _dateValidator.Validate(new DateParameter
-		{
-			VacationDate = vacationDateStart
-		});
-
-		if (request.IsValid && team.IsValid && employee.IsValid && dateStart.IsValid)
-		{
-			return VacationAPI.Request.Vacations.Put.VacationStart.EditVacationStart(db, teamName, employeeName, vacationDateStart,
-				newVacationDateStart, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors),
-			employeeErrors = string.Join("\r\n", employee.Errors),
-			dateStartErrors = string.Join("\r\n", dateStart.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Vacations.Put.VacationStart.EditVacationStart(db, teamName, employeeName, vacationDateStart,
+			vacationDateEnd,
+			newDate, username, accessToken);
 	});
 
 //изменение конца отпуска сотрудника
 app.MapPut(
-	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{newVacationDateEnd}/{username}/{access_token}", (
-		ApplicationContext db, string teamName, string employeeName, string vacationDateEnd,
-		string newVacationDateEnd, string username,
-		string access_token) =>
+	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{vacationDateEnd}/vacationDateEnd/{newDate}/{username}/{accessToken}",
+	(ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string vacationDateEnd,
+	string newDate, string username,
+	string accessToken) =>
 	{
-		_requestValidator = new(db);
-		_teamValidator = new(db);
-		_employeeValidator = new(db);
-		_dateValidator = new();
-
-		var request = _requestValidator.Validate(new Request
-		{
-			Username = username,
-			AccessToken = access_token
-		});
-
-		var team = _teamValidator.Validate(new TeamNameParameter
-		{
-			TeamName = teamName
-		});
-
-		var employee = _employeeValidator.Validate(new EmployeeNameParameter
-		{
-			EmployeeName = employeeName
-		});
-
-		var dateEnd = _dateValidator.Validate(new DateParameter
-		{
-			VacationDate = vacationDateEnd
-		});
-
-		if (request.IsValid && team.IsValid && employee.IsValid && dateEnd.IsValid)
-		{
-			return VacationAPI.Request.Vacations.Put.VacationEnd.EditVacationEnd(db, teamName, employeeName, vacationDateEnd,
-				newVacationDateEnd, username, access_token);
-		}
-
-		var errorsResponse = new
-		{
-			requestErrors = string.Join("\r\n", request.Errors),
-			teamErrors = string.Join("\r\n", team.Errors),
-			employeeErrors = string.Join("\r\n", employee.Errors),
-			dateStartErrors = string.Join("\r\n", dateEnd.Errors)
-		};
-
-		return Results.Json(errorsResponse);
+		return VacationAPI.Request.Vacations.Put.VacationEnd.EditVacationEnd(db, teamName, employeeName, vacationDateStart, vacationDateEnd,
+			newDate, username, accessToken);
 	});
 
 //удаление отпуска сотрудника
-app.MapDelete("api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{username}/{access_token}", (
-	ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string username,
-	string access_token) =>
-{
-	_requestValidator = new(db);
-	_teamValidator = new(db);
-	_employeeValidator = new(db);
-	_dateValidator = new();
-
-	var request = _requestValidator.Validate(new Request
+app.MapDelete(
+	"api/teams/{teamName}/employees/{employeeName}/vacations/vacation/{vacationDateStart}/{vacationDateEnd}/{username}/{accessToken}", (
+		ApplicationContext db, string teamName, string employeeName, string vacationDateStart, string vacationDateEnd,
+		string username,
+		string accessToken) =>
 	{
-		Username = username,
-		AccessToken = access_token
+		return VacationAPI.Request.Vacations.Delete.Vacation.RemoveVacation(db, teamName, employeeName, vacationDateStart, vacationDateEnd,
+			username,
+			accessToken);
 	});
-
-	var team = _teamValidator.Validate(new TeamNameParameter
-	{
-		TeamName = teamName
-	});
-
-	var employee = _employeeValidator.Validate(new EmployeeNameParameter
-	{
-		EmployeeName = employeeName
-	});
-
-	var dateStart = _dateValidator.Validate(new DateParameter
-	{
-		VacationDate = vacationDateStart
-	});
-
-	if (request.IsValid && team.IsValid && employee.IsValid && dateStart.IsValid)
-	{
-		return VacationAPI.Request.Vacations.Delete.Vacation.RemoveVacation(db, teamName, employeeName, vacationDateStart, username,
-			access_token);
-
-		;
-	}
-
-	var errorsResponse = new
-	{
-		requestErrors = string.Join("\r\n", request.Errors),
-		teamErrors = string.Join("\r\n", team.Errors),
-		employeeErrors = string.Join("\r\n", employee.Errors),
-		dateStartErrors = string.Join("\r\n", dateStart.Errors),
-	};
-
-	return Results.Json(errorsResponse);
-});
 
 app.Run();

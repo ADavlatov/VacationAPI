@@ -1,21 +1,25 @@
 using VacationAPI.Context;
+using VacationAPI.Entities;
 using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Employees.Post;
 
 public class Employee
 {
-	public static IResult AddNewEmployee(ApplicationContext db, string teamName, string employeeName, string employeePosition,
+	public static IResult? AddNewEmployee(ApplicationContext db, string teamName, string employeeName,
 										string username,
 										string accessToken)
 	{
-		if (db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username) != null)
+		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, newEmployeeName: employeeName);
+		Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username);
+
+		if (team != null && request == null)
 		{
 			db.Employees.Add(new()
 			{
 				Name = employeeName,
-				Position = employeePosition,
-				Team = db.Teams.FirstOrDefault(x => x.User.Name == username)
+				Team = team
 			});
 
 			db.SaveChanges();
@@ -24,12 +28,11 @@ public class Employee
 			{
 				teamName,
 				employeeName,
-				employeePosition
 			};
 
 			return Results.Json(response);
 		}
 
-		return Results.Json("Команды с таким именем не существует");
+		return request;
 	}
 }
