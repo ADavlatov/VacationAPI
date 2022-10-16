@@ -1,12 +1,11 @@
 using VacationAPI.Context;
-using VacationAPI.Request.Authentication.Get;
 using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Employees.Delete;
 
 public class Employee
 {
-	public static IResult? RemoveEmployee(ApplicationContext db, ILogger logger, string teamName, string employeeName, string username,
+	public static IResult RemoveEmployee(ApplicationContext db, ILogger logger, string teamName, string employeeName, string username,
 										string accessToken)
 	{
 		logger.LogInformation("Delete employee: start");
@@ -14,9 +13,9 @@ public class Employee
 		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
 			employeeName: employeeName);
 
-		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName);
+		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName)!;
 
-		if (employee != null && request == null)
+		if (request == null)
 		{
 			db.Employees.Remove(employee);
 			db.SaveChanges();

@@ -5,7 +5,7 @@ namespace VacationAPI.Request.Vacations.Put;
 
 public class VacationStart
 {
-	public static IResult? EditVacationStart(ApplicationContext db, ILogger logger, string teamName, string employeeName, string vacationDateStart,
+	public static IResult EditVacationStart(ApplicationContext db, ILogger logger, string teamName, string employeeName, string vacationDateStart,
 											string vacationDateEnd,
 											string newVacationDateStart, string username,
 											string accessToken)
@@ -18,11 +18,11 @@ public class VacationStart
 		Entities.Vacation vacation = db.Vacations.FirstOrDefault(x =>
 			x.StartOfVacation == DateOnly.Parse(vacationDateStart)
 			&& x.EndOfVacation == DateOnly.Parse(vacationDateEnd)
-			&& x.Employee.Name == employeeName
+			&& x.Employee!.Name == employeeName
 			&& x.Employee.Team.Name == teamName
-			&& x.Employee.Team.User.Name == username);
+			&& x.Employee.Team.User.Name == username)!;
 
-		if (vacation != null && request == null)
+		if (request == null)
 		{
 			vacation.StartOfVacation = DateOnly.Parse(newVacationDateStart);
 			db.SaveChanges();

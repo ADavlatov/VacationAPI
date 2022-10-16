@@ -7,14 +7,14 @@ namespace VacationAPI.Request.Employees.Get;
 
 public class Employees
 {
-	public static IResult? GetEmployees(ApplicationContext db, ILogger logger, string teamName, string username, string accessToken)
+	public static IResult GetEmployees(ApplicationContext db, ILogger logger, string teamName, string username, string accessToken)
 	{
 		logger.LogInformation("Get employees: start");
 
 		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName);
-		Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username);
+		Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username)!;
 
-		if (team != null && request == null)
+		if (request == null)
 		{
 			var teamEmployees = from employee in db.Employees
 							where employee.Team == team

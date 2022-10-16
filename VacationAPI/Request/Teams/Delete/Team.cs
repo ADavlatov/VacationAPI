@@ -11,9 +11,9 @@ public class Team
 		logger.LogInformation("Delete team: start");
 
 		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName);
-		Entities.Team team = db.Teams.FirstOrDefault(x => x.Name == teamName);
+		Entities.Team team = db.Teams.FirstOrDefault(x => x.Name == teamName)!;
 
-		if (team != null && request == null)
+		if (request == null)
 		{
 			db.Teams.Remove(team);
 			db.SaveChanges();

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using VacationAPI.Context;
 using VacationAPI.Request.Authentication;
 using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Request.Authentication.Post;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +27,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		options.TokenValidationParameters = new()
 		{
 			ValidateIssuer = true,
-			ValidIssuer = AuthOptions.ISSUER,
+			ValidIssuer = AuthOptions.Issuer,
 			ValidateAudience = true,
-			ValidAudience = AuthOptions.AUDIENCE,
+			ValidAudience = AuthOptions.Audience,
 			ValidateLifetime = true,
 			IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
 			ValidateIssuerSigningKey = true,
@@ -57,7 +58,7 @@ app.MapControllers();
 //регистрация пользователя. Добавление в бд
 app.MapPost("/api/auth/sign-in/{username}/{password}", (ApplicationContext db, string username, string password) =>
 {
-	return VacationAPI.Authentication.Post.User.AddNewUser(db, logger, username, password);
+	return User.AddNewUser(db, logger, username, password);
 });
 
 //получение токена

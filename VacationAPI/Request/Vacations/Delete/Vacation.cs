@@ -1,5 +1,4 @@
 using VacationAPI.Context;
-using VacationAPI.Request.Authentication.Get;
 using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Vacations.Delete;
@@ -19,11 +18,11 @@ public class Vacation
 		Entities.Vacation vacation = db.Vacations.FirstOrDefault(x =>
 			x.StartOfVacation == DateOnly.Parse(vacationDateStart)
 			&& x.EndOfVacation == DateOnly.Parse(vacationDateEnd)
-			&& x.Employee.Name == employeeName
+			&& x.Employee!.Name == employeeName
 			&& x.Employee.Team.Name == teamName
-			&& x.Employee.Team.User.Name == username);
+			&& x.Employee.Team.User.Name == username)!;
 
-		if (vacation != null && request == null)
+		if (request == null)
 		{
 			db.Vacations.Remove(vacation);
 			db.SaveChanges();

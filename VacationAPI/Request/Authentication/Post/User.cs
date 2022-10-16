@@ -1,9 +1,7 @@
 using VacationAPI.Context;
-using VacationAPI.Entities;
 using VacationAPI.Services;
-using VacationAPI.Services.RequestManager;
 
-namespace VacationAPI.Authentication.Post;
+namespace VacationAPI.Request.Authentication.Post;
 
 public class User
 {

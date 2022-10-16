@@ -1,6 +1,5 @@
 using VacationAPI.Context;
 using VacationAPI.Entities;
-using VacationAPI.Request.Authentication.Get;
 using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Teams.Put;
@@ -12,9 +11,9 @@ public class TeamName
 		logger.LogInformation("Change team name: start");
 
 		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, newTeamName: newTeamName);
-		Team team = db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName && x.Name != newTeamName);
+		Team team = db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName && x.Name != newTeamName)!;
 
-		if (team != null && request == null)
+		if (request == null)
 		{
 			team.Name = newTeamName;
 			db.SaveChanges();

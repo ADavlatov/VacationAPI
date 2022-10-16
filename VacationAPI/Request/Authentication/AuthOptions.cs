@@ -5,9 +5,9 @@ namespace VacationAPI.Request.Authentication;
 
 public class AuthOptions
 {
-	public const string ISSUER = "Server";
-	public const string AUDIENCE = "Client";
-	const string KEY = "mysupersecret_secretkey!123";
+	public const string Issuer = "Server";
+	public const string Audience = "Client";
+	const string Key = "mysupersecret_secretkey!123";
 	public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
-		new (Encoding.UTF8.GetBytes(KEY));
+		new (Encoding.UTF8.GetBytes(Key));
 }

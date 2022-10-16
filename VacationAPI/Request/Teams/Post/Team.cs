@@ -1,6 +1,5 @@
 using VacationAPI.Context;
 using VacationAPI.Entities;
-using VacationAPI.Request.Authentication.Get;
 using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Teams.Post;
@@ -12,9 +11,9 @@ public class Team
 		logger.LogInformation("Add new team: start");
 
 		var request = Manager.CheckRequest(db, logger, username, accessToken, newTeamName: teamName);
-		User user = db.Users.FirstOrDefault(x => x.Name == username);
+		User user = db.Users.FirstOrDefault(x => x.Name == username)!;
 
-		if (user != null && request == null)
+		if (request == null)
 		{
 			db.Teams.Add(new()
 			{

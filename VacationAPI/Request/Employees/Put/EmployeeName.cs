@@ -1,12 +1,11 @@
 using VacationAPI.Context;
-using VacationAPI.Request.Authentication.Get;
 using VacationAPI.Services.RequestManager;
 
 namespace VacationAPI.Request.Employees.Put;
 
 public class EmployeeName
 {
-	public static IResult? EditEmployeeName(ApplicationContext db, ILogger logger, string teamName, string oldEmployeeName, string newEmployeeName,
+	public static IResult EditEmployeeName(ApplicationContext db, ILogger logger, string teamName, string oldEmployeeName, string newEmployeeName,
 											string username,
 											string accessToken)
 	{
@@ -16,9 +15,9 @@ public class EmployeeName
 			newEmployeeName: newEmployeeName);
 
 		Entities.Employee employee =
-			db.Employees.FirstOrDefault(x => x.Name == oldEmployeeName && x.Team.Name == teamName && x.Team.User.Name == username);
+			db.Employees.FirstOrDefault(x => x.Name == oldEmployeeName && x.Team.Name == teamName && x.Team.User.Name == username)!;
 
-		if (employee != null && request == null)
+		if (request == null)
 		{
 			employee.Name = newEmployeeName;
 			db.SaveChanges();
