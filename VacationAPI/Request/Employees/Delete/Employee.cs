@@ -6,9 +6,14 @@ namespace VacationAPI.Request.Employees.Delete;
 
 public class Employee
 {
-	public static IResult? RemoveEmployee(ApplicationContext db, string teamName, string employeeName, string username, string accessToken)
+	public static IResult? RemoveEmployee(ApplicationContext db, ILogger logger, string teamName, string employeeName, string username,
+										string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, employeeName: employeeName);
+		logger.LogInformation("Delete employee: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
+			employeeName: employeeName);
+
 		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName);
 
 		if (employee != null && request == null)
@@ -16,8 +21,12 @@ public class Employee
 			db.Employees.Remove(employee);
 			db.SaveChanges();
 
+			logger.LogInformation("Delete employee: successfully");
+
 			return Results.Json($"Работник {employeeName} удален");
 		}
+
+		logger.LogError("Delete employee: failed");
 
 		return request;
 	}

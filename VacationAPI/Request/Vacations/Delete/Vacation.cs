@@ -6,12 +6,14 @@ namespace VacationAPI.Request.Vacations.Delete;
 
 public class Vacation
 {
-	public static IResult RemoveVacation(ApplicationContext db, string teamName, string employeeName, string vacationDateStart,
+	public static IResult RemoveVacation(ApplicationContext db, ILogger logger, string teamName, string employeeName, string vacationDateStart,
 										string vacationDateEnd,
 										string username,
 										string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, employeeName: employeeName,
+		logger.LogInformation("Delete vacation: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: employeeName,
 			vacationDateStart: vacationDateStart, vacationDateEnd: vacationDateEnd);
 
 		Entities.Vacation vacation = db.Vacations.FirstOrDefault(x =>
@@ -26,8 +28,12 @@ public class Vacation
 			db.Vacations.Remove(vacation);
 			db.SaveChanges();
 
+			logger.LogInformation("Delete vacation: successfully");
+
 			return Results.Json("Отпуск с началом в " + vacationDateStart + " удален");
 		}
+
+		logger.LogError("Delete vacation: failed");
 
 		return request;
 	}

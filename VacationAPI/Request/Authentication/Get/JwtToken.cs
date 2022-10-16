@@ -10,8 +10,10 @@ namespace VacationAPI.Request.Authentication.Get;
 
 public class JwtToken
 {
-	public static IResult GetJwtToken(ApplicationContext db, string username, string password)
+	public static IResult GetJwtToken(ApplicationContext db, ILogger logger, string username, string password)
 	{
+		logger.LogInformation("Getting token: start");
+
 		if (db.Users.FirstOrDefault(x => x.Name == username && x.Password == MD5Hash.GetHashedString(password)) != null)
 		{
 			var response = new
@@ -19,8 +21,12 @@ public class JwtToken
 				access_token = new JwtSecurityTokenHandler().WriteToken(GenerateToken(db, username, MD5Hash.GetHashedString(password))),
 			};
 
+			logger.LogInformation("Getting token: successfully");
+
 			return Results.Json(response);
 		}
+
+		logger.LogError("Getting token: failed");
 
 		return Results.Json("Неверный логин или пароль");
 	}

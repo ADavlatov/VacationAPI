@@ -7,9 +7,11 @@ namespace VacationAPI.Request.Teams.Post;
 
 public class Team
 {
-	public static IResult AddNewTeam(ApplicationContext db, string teamName, string username, string accessToken)
+	public static IResult AddNewTeam(ApplicationContext db, ILogger logger, string teamName, string username, string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, newTeamName: teamName);
+		logger.LogInformation("Add new team: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, newTeamName: teamName);
 		User user = db.Users.FirstOrDefault(x => x.Name == username);
 
 		if (user != null && request == null)
@@ -28,8 +30,12 @@ public class Team
 				teamName
 			};
 
+			logger.LogInformation("Add new team: successfully");
+
 			return Results.Json(response);
 		}
+
+		logger.LogError("Add new team: failed");
 
 		return request;
 	}

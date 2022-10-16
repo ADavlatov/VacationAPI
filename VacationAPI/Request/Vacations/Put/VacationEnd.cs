@@ -6,12 +6,14 @@ namespace VacationAPI.Request.Vacations.Put;
 
 public class VacationEnd
 {
-	public static IResult EditVacationEnd(ApplicationContext db, string teamName, string employeeName, string vacationDateStart,
+	public static IResult EditVacationEnd(ApplicationContext db, ILogger logger, string teamName, string employeeName, string vacationDateStart,
 										string vacationDateEnd,
 										string newVacationDateEnd, string username,
 										string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, employeeName: employeeName,
+		logger.LogInformation("Change vacation end date: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: employeeName,
 			vacationDateStart: vacationDateStart, vacationDateEnd: vacationDateEnd, newVacationDateEnd: newVacationDateEnd);
 
 		Entities.Vacation vacation = db.Vacations.FirstOrDefault(x =>
@@ -33,8 +35,12 @@ public class VacationEnd
 				newVacationDateEnd
 			};
 
+			logger.LogInformation("Change vacation end date: successfully");
+
 			return Results.Json(response);
 		}
+
+		logger.LogError("Change vacation end date: failed");
 
 		return request;
 	}

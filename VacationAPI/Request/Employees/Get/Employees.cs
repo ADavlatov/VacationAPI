@@ -7,9 +7,11 @@ namespace VacationAPI.Request.Employees.Get;
 
 public class Employees
 {
-	public static IResult? GetEmployees(ApplicationContext db, string teamName, string username, string accessToken)
+	public static IResult? GetEmployees(ApplicationContext db, ILogger logger, string teamName, string username, string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName);
+		logger.LogInformation("Get employees: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName);
 		Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username);
 
 		if (team != null && request == null)
@@ -19,8 +21,12 @@ public class Employees
 							select employee.Name;
 			string employees = string.Join(", ", teamEmployees);
 
+			logger.LogInformation("Get employees: successfully");
+
 			return Results.Json(employees);
 		}
+
+		logger.LogError("Get employees: failed");
 
 		return request;
 	}

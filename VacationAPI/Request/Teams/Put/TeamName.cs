@@ -7,9 +7,11 @@ namespace VacationAPI.Request.Teams.Put;
 
 public class TeamName
 {
-	public static IResult EditTeamName(ApplicationContext db, string teamName, string newTeamName, string username, string accessToken)
+	public static IResult EditTeamName(ApplicationContext db, ILogger logger, string teamName, string newTeamName, string username, string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, newTeamName: newTeamName);
+		logger.LogInformation("Change team name: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, newTeamName: newTeamName);
 		Team team = db.Teams.FirstOrDefault(x => x.User.Name == username && x.Name == teamName && x.Name != newTeamName);
 
 		if (team != null && request == null)
@@ -23,8 +25,12 @@ public class TeamName
 				newTeamName
 			};
 
+			logger.LogInformation("Change team name: successfully");
+
 			return Results.Json(response);
 		}
+
+		logger.LogError("Change team name: failed");
 
 		return request;
 	}

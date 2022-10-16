@@ -6,10 +6,12 @@ namespace VacationAPI.Request.Vacations.Get;
 
 public class Employee
 {
-	public static IResult? GetVacations(ApplicationContext db, string teamName, string employeeName,
+	public static IResult? GetVacations(ApplicationContext db, ILogger logger, string teamName, string employeeName,
 										string username, string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, employeeName: employeeName);
+		logger.LogInformation("Get vacations: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: employeeName);
 
 		Entities.Employee employee =
 			db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username);
@@ -19,10 +21,15 @@ public class Employee
 			var employeeVacations = from vacation in db.Vacations
 									where vacation.Employee == employee
 									select vacation;
+
 			string teams = string.Join(", ", employeeVacations.Count());
+
+			logger.LogInformation("Get vacations: successfully");
 
 			return Results.Json(teams);
 		}
+
+		logger.LogError("Get vacations: failed");
 
 		return request;
 	}

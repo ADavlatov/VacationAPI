@@ -7,11 +7,13 @@ namespace VacationAPI.Request.Employees.Post;
 
 public class Employee
 {
-	public static IResult? AddNewEmployee(ApplicationContext db, string teamName, string employeeName,
+	public static IResult? AddNewEmployee(ApplicationContext db, ILogger logger, string teamName, string employeeName,
 										string username,
 										string accessToken)
 	{
-		var request = Manager.CheckRequest(db, username, accessToken, teamName: teamName, newEmployeeName: employeeName);
+		logger.LogInformation("Add new employee: start");
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, newEmployeeName: employeeName);
 		Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username);
 
 		if (team != null && request == null)
@@ -30,8 +32,12 @@ public class Employee
 				employeeName,
 			};
 
+			logger.LogInformation("Add new employee: successfully");
+
 			return Results.Json(response);
 		}
+
+		logger.LogError("Add new employee: failed");
 
 		return request;
 	}
