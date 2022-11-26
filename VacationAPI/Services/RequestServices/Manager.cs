@@ -1,16 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
 using VacationAPI.Context;
 
-namespace VacationAPI.Services.RequestManager;
+namespace VacationAPI.Services.RequestServices;
 
-public class Manager
+public static class Manager
 {
 	public static IResult? CheckRequest(ApplicationContext db, ILogger logger, string username, string accessToken, string newUsername = "",
 										string teamName = "",
 										string newTeamName = "", string employeeName = "", string newEmployeeName = "",
 										string vacationDateStart = "", string newVacationDateStart = "",
 										string vacationDateEnd = "",
-										string newVacationDateEnd = "")
+										string newVacationDateEnd = "", string year = "")
 	{
 		JwtSecurityToken jwtSecurityToken;
 		DateOnly vacationStart;
@@ -18,15 +19,9 @@ public class Manager
 		DateOnly startDate;
 		DateOnly endDate;
 
-		Entities.User? user = db.Users.FirstOrDefault(x => x.Name == username);
-		Entities.Team? team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User == user);
-		Entities.Employee? employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team == team);
-
-		Entities.User? newUser = db.Users.FirstOrDefault(x => x.Name == newUsername);
-		Entities.Team? newTeam = db.Teams.FirstOrDefault(x => x.Name == newTeamName && x.User == user);
-
-		Entities.Employee? newEmployee =
-			db.Employees.FirstOrDefault(x => x.Name == newEmployeeName && x.Team == team);
+		var user = db.Users.Include(x => x.Teams.Where(y => y.Name == teamName || y.Name == newTeamName))
+			.ThenInclude(x => x.Employees.Where(y => y.Name == employeeName || y.Name == newEmployeeName))
+			.FirstOrDefault(x => x.Name == username);
 
 		try
 		{
@@ -34,21 +29,21 @@ public class Manager
 		}
 		catch (Exception)
 		{
-			logger.LogError("Request error: invalid accessToken");
+			logger.LogWarning("Request error: invalid accessToken");
 
 			return Results.Json("Неверный accessToken");
 		}
 
 		if (user == null)
 		{
-			logger.LogError("Request error: user not found");
+			logger.LogWarning("Request error: user not found");
 
 			return Results.Json("Пользователь не найден");
 		}
 
-		if (newUser != null && newUsername != "")
+		if (newUsername != "" && db.Users.FirstOrDefault() != null)
 		{
-			logger.LogError("Request error: user with this name already exists");
+			logger.LogWarning("Request error: user with this name already exists");
 
 			return Results.Json("Пользователь с таким именем уже существует");
 		}
@@ -57,35 +52,39 @@ public class Manager
 				.Value
 			!= username)
 		{
-			logger.LogError("Request error: invalid accessToken");
+			logger.LogWarning("Request error: invalid accessToken");
 
 			return Results.Json("Неверный accessToken");
 		}
 
-		if (team == null && teamName != "")
+		if (teamName != "" && user.Teams.FirstOrDefault() == null)
 		{
-			logger.LogError("Request error: team not found");
+			logger.LogWarning("Request error: team not found");
 
 			return Results.Json("Команда не найдена");
 		}
 
-		if (newTeam != null && newTeamName != "")
+		if (newTeamName != "" && user.Teams.FirstOrDefault() != null)
 		{
-			logger.LogError("Request error: team with this name already exists");
+			logger.LogWarning("Request error: team with this name already exists");
 
 			return Results.Json("Такая команда уже существует");
 		}
 
-		if (employee == null && employeeName != "")
+		if (employeeName != ""
+			&& user.Teams.FirstOrDefault()!
+				.Employees.FirstOrDefault()
+			== null)
 		{
-			logger.LogError("Request error: employee not found");
+			logger.LogWarning("Request error: employee not found");
 
 			return Results.Json("Сотрудник не найден");
 		}
 
-		if (newEmployee != null && newEmployeeName != "")
+		if (newEmployeeName != ""
+			&& user.Teams.FirstOrDefault()!.Employees.FirstOrDefault() != null)
 		{
-			logger.LogError("Request error: employee with this name already exists");
+			logger.LogWarning("Request error: employee with this name already exists");
 
 			return Results.Json("Сотрудник с таким именем уже существует в данной команде");
 		}
@@ -94,11 +93,13 @@ public class Manager
 		{
 			if (DateOnly.TryParse(vacationDateStart, out vacationStart) && DateOnly.TryParse(vacationDateEnd, out vacationEnd))
 			{
-				if (db.Vacations.FirstOrDefault(x =>
-						x.StartOfVacation == vacationStart && x.EndOfVacation == vacationEnd && x.Employee == employee)
+				if (user.Teams.FirstOrDefault()
+						.Employees.FirstOrDefault()
+						.Vacations.Find(x => x.StartOfVacation == startDate && x.EndOfVacation == endDate)
 					== null)
+
 				{
-					logger.LogError("Request error: vacation not found");
+					logger.LogWarning("Request error: vacation not found");
 
 					return Results.Json("Отпуск с таким значением даты не найден");
 				}
@@ -110,20 +111,20 @@ public class Manager
 						if ((startDate > vacationEnd && newVacationDateStart != "")
 							|| (endDate < vacationStart && newVacationDateEnd != ""))
 						{
-							logger.LogError("Request error: impossible to put the end of the vacation before it begins");
+							logger.LogWarning("Request error: impossible to put the end of the vacation before it begins");
 
 							return Results.Json("Нельзя поставить окончание отпуска до его начала");
 						}
 					} else
 					{
-						logger.LogError("Request error: invalid date format");
+						logger.LogWarning("Request error: invalid date format");
 
 						return Results.Json("Неверный формат даты");
 					}
 				}
 			} else
 			{
-				logger.LogError("Request error: invalid date format");
+				logger.LogWarning("Request error: invalid date format");
 
 				return Results.Json("Неверный формат даты");
 			}
@@ -133,26 +134,35 @@ public class Manager
 		{
 			if (DateOnly.TryParse(newVacationDateStart, out startDate) && DateOnly.TryParse(newVacationDateEnd, out endDate))
 			{
-				if (db.Vacations.FirstOrDefault(x => x.StartOfVacation == startDate && x.EndOfVacation == endDate && x.Employee == employee)
+				if (db.Vacations.FirstOrDefault(x => x.StartOfVacation == startDate
+													&& x.EndOfVacation == endDate
+													&& x.Employee
+													== user.Teams.FirstOrDefault()!
+														.Employees.FirstOrDefault())
 					!= null)
 				{
-					logger.LogError("Request error: vacation with this date already exists");
+					logger.LogWarning("Request error: vacation with this date already exists");
 
 					return Results.Json("Отпуск с таким значением даты уже существует");
 				}
 
 				if (startDate > endDate)
 				{
-					logger.LogError("Request error: impossible to put the end of the vacation before it begins");
+					logger.LogWarning("Request error: impossible to put the end of the vacation before it begins");
 
 					return Results.Json("Нельзя поставить окончание отпуска до его начала");
 				}
 			} else
 			{
-				logger.LogError("Request error: invalid date format");
+				logger.LogWarning("Request error: invalid date format");
 
 				return Results.Json("Неверный формат даты");
 			}
+		}
+
+		if (year != "" && !DateOnly.TryParse("01.01." + year, out var _))
+		{
+			return Results.Json("Неверный формат даты");
 		}
 
 		return null;
