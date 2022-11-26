@@ -9,12 +9,15 @@ namespace VacationAPI.Request.Authentication.Get;
 
 public class JwtToken
 {
+	//Получение JWT токена. Нужен для отправки запросов к API
 	public static IResult GetJwtToken(ApplicationContext db, ILogger logger, string username, string password)
 	{
 		logger.LogInformation("Getting token: start");
 
+		//Проверка имеется ли пользователь с таким именем и паролем в базе данных
 		if (db.Users.FirstOrDefault(x => x.Name == username && x.Password == MD5Hash.GetHashedString(password)) != null)
 		{
+			//Ответ пользотелю в случае успеха. Содержит JWT токен
 			var response = new
 			{
 				access_token = new JwtSecurityTokenHandler().WriteToken(GenerateToken(db, username, MD5Hash.GetHashedString(password))),
@@ -27,9 +30,11 @@ public class JwtToken
 
 		logger.LogError("Getting token: failed");
 
+		//Ответ в случае ошибки
 		return Results.Json("Неверный логин или пароль");
 	}
 
+	//Генерация JWT токена
 	private static JwtSecurityToken GenerateToken(ApplicationContext db, string username, string password)
 	{
 		return new(issuer: AuthOptions.Issuer,
@@ -40,6 +45,7 @@ public class JwtToken
 			signingCredentials: new(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
 	}
 
+	//Получение claims для генерации JWT токена
 	private static ClaimsIdentity? GetClaims(ApplicationContext db, string username, string password)
 	{
 		User? user = db.Users.FirstOrDefault(x => x.Name == username && x.Password == password);

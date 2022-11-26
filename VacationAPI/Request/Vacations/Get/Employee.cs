@@ -5,6 +5,7 @@ namespace VacationAPI.Request.Vacations.Get;
 
 public class Employee
 {
+	//@TODO Сделать вывод списка дат окончания и начала отпусков сотрудника
 	public static IResult GetVacations(ApplicationContext db, ILogger logger, string teamName, string employeeName,
 										string username, string accessToken)
 	{

@@ -5,6 +5,7 @@ namespace VacationAPI.Services;
 
 public class MD5Hash
 {
+	//Хэширование заданной строки
 	public static string GetHashedString(string password)
 	{
 		using (var hashAlg = MD5.Create())
