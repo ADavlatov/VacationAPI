@@ -1,5 +1,5 @@
 using VacationAPI.Context;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Employees.Delete;
 
@@ -13,10 +13,10 @@ public class Employee
 		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
 			employeeName: employeeName);
 
-		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName)!;
-
 		if (request == null)
 		{
+			Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName)!;
+
 			db.Employees.Remove(employee);
 			db.SaveChanges();
 
@@ -24,8 +24,6 @@ public class Employee
 
 			return Results.Json($"Работник {employeeName} удален");
 		}
-
-		logger.LogError("Delete employee: failed");
 
 		return request;
 	}

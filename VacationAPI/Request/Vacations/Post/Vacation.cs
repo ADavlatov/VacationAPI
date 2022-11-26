@@ -1,19 +1,22 @@
 using VacationAPI.Context;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Vacations.Post;
 
 public class Vacation
 {
-	public static IResult AddNewVacation(ApplicationContext db, ILogger logger, string teamName, string employeeName, string vacationDateStart,
+	public static IResult AddNewVacation(ApplicationContext db, ILogger logger, string teamName, string employeeName,
+										string vacationDateStart,
 										string vacationDateEnd, string username, string accessToken)
 	{
 		logger.LogInformation("Add new vacation: start");
 
-		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: employeeName,
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
+			employeeName: employeeName,
 			newVacationDateStart: vacationDateStart, newVacationDateEnd: vacationDateEnd);
 
-		Entities.Employee employee = db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.User.Name == username)!;
+		Entities.Employee employee =
+			db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username)!;
 
 		if (request == null)
 		{

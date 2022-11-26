@@ -1,17 +1,28 @@
 using VacationAPI.Context;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
+using VacationAPI.Services.Validation;
 
 namespace VacationAPI.Request.Employees.Put;
 
 public class EmployeeName
 {
-	public static IResult EditEmployeeName(ApplicationContext db, ILogger logger, string teamName, string oldEmployeeName, string newEmployeeName,
+	public static IResult EditEmployeeName(ApplicationContext db, EmployeeValidator employeeValidator, ILogger logger, string teamName,
+											string oldEmployeeName, string newEmployeeName,
 											string username,
 											string accessToken)
 	{
 		logger.LogInformation("Change employee name: start");
 
-		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: oldEmployeeName,
+		if (!employeeValidator.Validate(new Employee(newEmployeeName))
+				.IsValid)
+		{
+			logger.LogError("Change employee name: wrong format of input");
+
+			Results.Json("Недопустимый формат ввода. Имя сотрудника должно состоять только из букв и не превышать длину в 50 символов");
+		}
+
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
+			employeeName: oldEmployeeName,
 			newEmployeeName: newEmployeeName);
 
 		Entities.Employee employee =

@@ -1,18 +1,20 @@
 using VacationAPI.Context;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Vacations.Delete;
 
 public class Vacation
 {
-	public static IResult RemoveVacation(ApplicationContext db, ILogger logger, string teamName, string employeeName, string vacationDateStart,
+	public static IResult RemoveVacation(ApplicationContext db, ILogger logger, string teamName, string employeeName,
+										string vacationDateStart,
 										string vacationDateEnd,
 										string username,
 										string accessToken)
 	{
 		logger.LogInformation("Delete vacation: start");
 
-		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: employeeName,
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
+			employeeName: employeeName,
 			vacationDateStart: vacationDateStart, vacationDateEnd: vacationDateEnd);
 
 		Entities.Vacation vacation = db.Vacations.FirstOrDefault(x =>

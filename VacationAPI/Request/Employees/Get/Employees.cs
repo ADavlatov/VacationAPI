@@ -1,7 +1,7 @@
 using VacationAPI.Context;
 using VacationAPI.Entities;
 using VacationAPI.Request.Authentication.Get;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Employees.Get;
 
@@ -12,13 +12,15 @@ public class Employees
 		logger.LogInformation("Get employees: start");
 
 		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName);
-		Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username)!;
 
 		if (request == null)
 		{
+			Team team = db.Teams.FirstOrDefault(x => x.Name == teamName && x.User.Name == username)!;
+
 			var teamEmployees = from employee in db.Employees
-							where employee.Team == team
-							select employee.Name;
+								where employee.Team == team
+								select employee.Name;
+
 			string employees = string.Join(", ", teamEmployees);
 
 			logger.LogInformation("Get employees: successfully");

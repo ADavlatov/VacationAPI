@@ -1,5 +1,5 @@
 using VacationAPI.Context;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Vacations.Get;
 
@@ -10,7 +10,8 @@ public class Employee
 	{
 		logger.LogInformation("Get vacations: start");
 
-		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName, employeeName: employeeName);
+		var request = Manager.CheckRequest(db, logger, username, accessToken, teamName: teamName,
+			employeeName: employeeName);
 
 		Entities.Employee employee =
 			db.Employees.FirstOrDefault(x => x.Name == employeeName && x.Team.Name == teamName && x.Team.User.Name == username)!;

@@ -1,15 +1,25 @@
 using VacationAPI.Context;
 using VacationAPI.Services;
+using VacationAPI.Services.Validation;
 
 namespace VacationAPI.Request.Authentication.Post;
 
 public class User
 {
-	public static IResult AddNewUser(ApplicationContext db, ILogger logger, string username, string password)
+	public static IResult AddNewUser(ApplicationContext db, UserValidator userValidator, ILogger logger, string username, string password)
 	{
 		logger.LogInformation("Add new user: start");
 
-		if (db.Users.FirstOrDefault(x => x.Name == username) == null)
+		if (!userValidator.Validate(new Services.Validation.User(username))
+				.IsValid)
+		{
+			logger.LogError("Add new user: Wrong format of input");
+
+			return Results.Json(
+				"Недопустимый формат ввода. Имя пользователя должно состоять только из букв и не превышать длину в 50 символов");
+		}
+
+		if (!db.Users.Any(x => x.Name == username))
 		{
 			db.Users.Add(new()
 			{
@@ -32,7 +42,6 @@ public class User
 		}
 
 		logger.LogError("Request error: user with this name already exists");
-		logger.LogError("Add new user: failed");
 
 		return Results.Json("Пользователь с таким ником уже существует");
 	}

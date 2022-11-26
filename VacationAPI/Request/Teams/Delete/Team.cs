@@ -1,6 +1,5 @@
 using VacationAPI.Context;
-using VacationAPI.Request.Authentication.Get;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Teams.Delete;
 

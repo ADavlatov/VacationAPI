@@ -1,6 +1,5 @@
 using VacationAPI.Context;
-using VacationAPI.Entities;
-using VacationAPI.Services.RequestManager;
+using VacationAPI.Services.RequestServices;
 
 namespace VacationAPI.Request.Teams.Get;
 
@@ -8,33 +7,25 @@ public class Teams
 {
 	public static IResult GetTeams(ApplicationContext db, ILogger logger, string username, string accessToken)
 	{
-		logger.LogInformation("Get teams: start");
+		var result = Manager.CheckRequest(db, logger, username, accessToken);
 
-		var request = Manager.CheckRequest(db, logger, username, accessToken);
-		User user = db.Users.FirstOrDefault(x => x.Name == username)!;
-
-		if (db.Teams.FirstOrDefault(x => x.User == user) == null)
+		if (result == null)
 		{
-			logger.LogInformation("Get teams: successfully");
+			List<string> teamsName = new();
 
-			Results.Json("Список команд пуст");
-		}
+			foreach (var team in db.Teams)
+			{
+				if (team.User.Name == username)
+				{
+					teamsName.Add(team.Name);
+				}
+			}
 
-		if (request == null)
-		{
-			var userTeams = from team in db.Teams
-							where team.User == user
-							select team.Name;
-
-			string teams = string.Join(", ", userTeams);
-
-			logger.LogInformation("Get teams: successfully");
+			string teams = string.Join(", ", teamsName);
 
 			return Results.Json(teams);
 		}
 
-		logger.LogError("Get teams: failed");
-
-		return request;
+		return result;
 	}
 }

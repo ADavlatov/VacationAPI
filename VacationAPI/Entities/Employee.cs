@@ -1,6 +1,6 @@
 namespace VacationAPI.Entities;
 
-public record Employee()
+public record Employee
 {
 	public Guid Id;
 
