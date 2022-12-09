@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
-using VacationAPI.Context;
-using VacationAPI.Request.Authentication;
+using VacationAPI.Contexts;
+using VacationAPI.Requests.User;
 using VacationAPI.Services.RequestServices;
 using VacationAPI.Services.Validation;
 
