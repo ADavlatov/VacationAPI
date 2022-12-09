@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
-using VacationAPI.Context;
+using VacationAPI.Contexts;
 
 namespace VacationAPI.Services.RequestServices;
 
@@ -12,7 +12,7 @@ public static class Manager
 										string newTeamName = "", string employeeName = "", string newEmployeeName = "",
 										string vacationDateStart = "", string newVacationDateStart = "",
 										string vacationDateEnd = "",
-										string newVacationDateEnd = "", string year = "")
+										string newVacationDateEnd = "", string year = "", string month = "", string day = "")
 	{
 		JwtSecurityToken jwtSecurityToken; //JWT токен
 		DateOnly vacationStart; //Дата начала отпуска
@@ -114,8 +114,8 @@ public static class Manager
 			if (DateOnly.TryParse(vacationDateStart, out vacationStart) && DateOnly.TryParse(vacationDateEnd, out vacationEnd))
 			{
 				//Проверка на наличие отпуска в базе данных
-				if (user.Teams.FirstOrDefault()
-						.Employees.FirstOrDefault()
+				if (user.Teams.FirstOrDefault()?
+						.Employees.FirstOrDefault()?
 						.Vacations.Find(x => x.StartOfVacation == startDate && x.EndOfVacation == endDate)
 					== null)
 
@@ -197,6 +197,20 @@ public static class Manager
 
 		//Проверка валидности введенного года
 		if (year != "" && !DateOnly.TryParse("01.01." + year, out var _))
+		{
+			//Ответ в случае ошибки
+			return Results.Json("Неверный формат даты");
+		}
+
+		//Проверка валидности введенного месяца
+		if (month != "" && !DateOnly.TryParse("01." + month + ".2022", out var _))
+		{
+			//Ответ в случае ошибки
+			return Results.Json("Неверный формат даты");
+		}
+
+		//Проверка валидности введенного дня
+		if (day != "" && !DateOnly.TryParse(day + ".01.2022", out var _))
 		{
 			//Ответ в случае ошибки
 			return Results.Json("Неверный формат даты");

@@ -1,40 +1,130 @@
-using VacationAPI.Context;
-using VacationAPI.Request.Authentication.Get;
+using VacationAPI.Contexts;
+using VacationAPI.Requests.Teams.Put;
 using VacationAPI.Services.Validation;
+using Employee = VacationAPI.Requests.Employees.Delete.Employee;
+using Team = VacationAPI.Requests.Teams.Delete.Team;
 
 namespace VacationAPI.Services.RequestServices;
 
 public class RequestRouter
 {
 	//@TODO добавить возможность перемещать сотрудников из одной команды в другую
-	//@TODO получение количества отпусков на данный момент
+
 	//Эндпоинты запросов к API
 	public void Route(WebApplication app)
 	{
 		//Регистрация пользователя. Добавление в бд
-		app.MapPost("/api/auth/sign-in/{username}/{password}", (ApplicationContext db, UserValidator userValidator, ILogger<RequestRouter> logger, string username, string password) =>
+		app.MapPost("/api/user/sign-in/{username}/{password}", (ApplicationContext db, UserValidator userValidator,
+																ILogger<RequestRouter> logger, string username, string password) =>
 		{
-			return Request.Authentication.Post.User.AddNewUser(db, userValidator, logger, username, password);
+			return Requests.User.Post.User.AddNewUser(db, userValidator, logger, username, password);
 		});
 
 		//Получение JWT токена
-		app.MapGet("/api/auth/token/{username}/{password}", (ApplicationContext db, ILogger<RequestRouter> logger, string username, string password) =>
-		{
-			return JwtToken.GetJwtToken(db, logger, username, password);
-		});
+		app.MapGet("/api/user/log-in/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string username, string password) =>
+			{
+				return Requests.User.Get.JwtToken.GetJwtToken(db, logger, username, password);
+			});
+
+		//Получение информации о командах пользователя
+		app.MapGet("/api/user/teams/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string username, string accessToken) =>
+			{
+				return Requests.User.Get.Teams.GetInfo(db, logger, username, accessToken);
+			});
+
+		//Получение информации о сотрудниках пользователя
+		app.MapGet("/api/user/employees/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string username, string accessToken) =>
+			{
+				return Requests.User.Get.Employees.GetInfo(db, logger, username, accessToken);
+			});
+
+		//Получение информации о сотрудниках в отпуске в данный момент
+		app.MapGet("/api/user/employees/on-vacation/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string username, string accessToken) =>
+			{
+				return Requests.User.Get.EmployeesOnVacation.GetInfo(db, logger, username, accessToken);
+			});
+
+		//Получение информации о сотрудниках в отпуске в заданный год
+		app.MapGet("/api/user/employees/on-vacation/year/{year}/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string year, string username, string accessToken) =>
+			{
+				return Requests.User.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenYear(db, logger, year, username, accessToken);
+			});
+
+		//Получение информации о сотрудниках в отпуске в заданный месяц
+		app.MapGet("/api/user/employees/on-vacation/month/{month}/year/{year}/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string month, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.User.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenMonth(db, logger, month, year, username,
+					accessToken);
+			});
+
+		//Получение информации о сотрудниках в отпуске в заданный день
+		app.MapGet("/api/user/employees/on-vacation/day/{day}/month/{month}/year/{year}/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string day, string month, string year,
+			string username, string accessToken) =>
+			{
+				return Requests.User.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenDay(db, logger, day, month, year,
+					username, accessToken);
+			});
 
 		//Создание новой команды
 		app.MapPost("api/teams/new-team/{teamName}/{username}/{accessToken}",
-			(ApplicationContext db, TeamValidator teamValidator, ILogger<RequestRouter> logger, string teamName, string username, string accessToken) =>
+			(ApplicationContext db, TeamValidator teamValidator, ILogger<RequestRouter> logger, string teamName, string username,
+			string accessToken) =>
 			{
-				return Request.Teams.Post.Team.AddNewTeam(db, teamValidator, logger, teamName, username, accessToken);
+				return Requests.Teams.Post.Team.AddNewTeam(db, teamValidator, logger, teamName, username,
+					accessToken);
 			});
 
-		//Получение списка всех команд пользователя
-		app.MapGet("api/teams/{username}/{accessToken}",
-			(ApplicationContext db, ILogger<RequestRouter> logger, string username, string accessToken) =>
+		//Получение списка всех сотрудников команды
+		app.MapGet("api/teams/{teamName}/employees/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string username, string accessToken) =>
 			{
-				return Request.Teams.Get.Teams.GetTeams(db, logger, username, accessToken);
+				return Requests.Teams.Get.Employees.GetInfo(db, logger, teamName, username, accessToken);
+			});
+
+		//Получение списка всех сотрудников команды в отпуске в данный момент
+		app.MapGet("api/teams/{teamName}/employees/on-vacation/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string username, string accessToken) =>
+			{
+				return Requests.Teams.Get.EmployeesOnVacation.GetInfo(db, logger, teamName, username, accessToken);
+			});
+
+		//Получение списка всех сотрудников команды в отпуске в заданный год
+		app.MapGet("api/teams/{teamName}/employees/on-vacation/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenYear(db, logger, teamName, year, username,
+					accessToken);
+			});
+
+		//Получение списка всех сотрудников команды в отпуске в заданный месяц
+		app.MapGet("api/teams/{teamName}/employees/on-vacation/month/{month}/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string month, string year,
+			string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenMonth(db, logger, teamName, month, year,
+					username,
+					accessToken);
+			});
+
+		//Получение списка всех сотрудников команды в отпуске в заданный день
+		app.MapGet("api/teams/{teamName}/employees/on-vacation/day/{day}/month/{month}/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string day, string month,
+			string year, string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenDay(db, logger, teamName, day, month,
+					year, username,
+					accessToken);
 			});
 
 		// //Получение диаграммы с количеством отпусков всех команд за год по месяцам
@@ -75,10 +165,12 @@ public class RequestRouter
 
 		//Изменение название команды
 		app.MapPut("api/teams/team/{teamName}/{newTeamName}/{username}/{accessToken}",
-			(ApplicationContext db, TeamValidator teamValidator, ILogger<RequestRouter> logger, string teamName, string newTeamName, string username,
+			(ApplicationContext db, TeamValidator teamValidator, ILogger<RequestRouter> logger, string teamName, string newTeamName,
+			string username,
 			string accessToken) =>
 			{
-				return Request.Teams.Put.TeamName.EditTeamName(db, teamValidator, logger, teamName, newTeamName, username,
+				return TeamName.EditTeamName(db, teamValidator, logger, teamName, newTeamName,
+					username,
 					accessToken);
 			});
 
@@ -86,15 +178,17 @@ public class RequestRouter
 		app.MapDelete("api/teams/team/{teamName}/{username}/{accessToken}",
 			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string username, string accessToken) =>
 			{
-				return Request.Teams.Delete.Team.RemoveTeam(db, logger, teamName, username, accessToken);
+				return Team.RemoveTeam(db, logger, teamName, username, accessToken);
 			});
 
 		//Добавление работника
 		app.MapPost("api/teams/team/{teamName}/employees/new-employee/{employeeName}/{username}/{accessToken}",
-			(ApplicationContext db, EmployeeValidator employeeValidator, ILogger<RequestRouter> logger, string teamName, string employeeName, string username,
+			(ApplicationContext db, EmployeeValidator employeeValidator, ILogger<RequestRouter> logger, string teamName,
+			string employeeName, string username,
 			string accessToken) =>
 			{
-				return Request.Employees.Post.Employee.AddNewEmployee(db, employeeValidator, logger, teamName, employeeName, username,
+				return Requests.Employees.Post.Employee.AddNewEmployee(db, employeeValidator, logger, teamName, employeeName,
+					username,
 					accessToken);
 			});
 
@@ -107,21 +201,37 @@ public class RequestRouter
 		// 			username, accessToken);
 		// 	});
 
-		//Получение списка работников команды
-		app.MapGet("api/teams/{teamName}/employees/{username}/{accessToken}",
-			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string username,
+		//Получение количества дней в отпуске в заданном году работника заданной команды
+		app.MapGet("api/teams/{teamName}/employees/{employeeName}/days-on-vacation/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string employeeName, string year,
+			string username,
 			string accessToken) =>
 			{
-				return Request.Employees.Get.Employees.GetEmployees(db, logger, teamName, username, accessToken);
+				return Requests.Employees.Get.DaysOnVacationAtTheMoment.GetInfoInGivenYear(db, logger, teamName, employeeName, year,
+					username, accessToken);
+			});
+
+		//Получение количества дней в отпуске в заданном месяце работника заданной команды
+		app.MapGet("api/teams/{teamName}/employees/{employeeName}/days-on-vacation/month/{month}/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string employeeName, string month,
+			string year,
+			string username,
+			string accessToken) =>
+			{
+				return Requests.Employees.Get.DaysOnVacationAtTheMoment.GetInfoInGivenMonth(db, logger, teamName, employeeName, month,
+					year,
+					username, accessToken);
 			});
 
 		//Изменение имени работника
 		app.MapPut("api/teams/{teamName}/employees/employee/{employeeName}/{newEmployeeName}/{username}/{accessToken}",
-			(ApplicationContext db, EmployeeValidator employeeValidator, ILogger<RequestRouter> logger, string teamName, string employeeName, string newEmployeeName,
+			(ApplicationContext db, EmployeeValidator employeeValidator, ILogger<RequestRouter> logger, string teamName,
+			string employeeName, string newEmployeeName,
 			string username,
 			string accessToken) =>
 			{
-				return Request.Employees.Put.EmployeeName.EditEmployeeName(db, employeeValidator, logger, teamName, employeeName, newEmployeeName,
+				return Requests.Employees.Put.EmployeeName.EditEmployeeName(db, employeeValidator, logger, teamName, employeeName,
+					newEmployeeName,
 					username,
 					accessToken);
 			});
@@ -131,7 +241,7 @@ public class RequestRouter
 			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string employeeName, string username,
 			string accessToken) =>
 			{
-				return Request.Employees.Delete.Employee.RemoveEmployee(db, logger, teamName, employeeName, username,
+				return Employee.RemoveEmployee(db, logger, teamName, employeeName, username,
 					accessToken);
 			});
 
