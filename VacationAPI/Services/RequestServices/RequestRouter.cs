@@ -1,8 +1,5 @@
 using VacationAPI.Contexts;
-using VacationAPI.Requests.Teams.Put;
 using VacationAPI.Services.Validation;
-using Employee = VacationAPI.Requests.Employees.Delete.Employee;
-using Team = VacationAPI.Requests.Teams.Delete.Team;
 
 namespace VacationAPI.Services.RequestServices;
 
@@ -13,6 +10,12 @@ public class RequestRouter
 	//Эндпоинты запросов к API
 	public void Route(WebApplication app)
 	{
+		app.MapPost("/test/{username}/{accessToken}", (ApplicationContext db,
+														ILogger<RequestRouter> logger, string username, string accessToken) =>
+		{
+			return Requests.User.Get.Diagrams.EmployeesOnVacation.GetDiagram(db, logger, username, accessToken);
+		});
+
 		//Регистрация пользователя. Добавление в бд
 		app.MapPost("/api/user/sign-in/{username}/{password}", (ApplicationContext db, UserValidator userValidator,
 																ILogger<RequestRouter> logger, string username, string password) =>
@@ -71,6 +74,29 @@ public class RequestRouter
 			{
 				return Requests.User.Get.EmployeesOnVacationAtTheMoment.GetInfoInGivenDay(db, logger, day, month, year,
 					username, accessToken);
+			});
+
+		//Получение диаграммы со всеми командами и колчеством сотрудников в отпуске в данный момент (количество сотрудников в каждой команде)
+		app.MapGet("/api/user/diagrams/employees-on-vacation/now/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string username, string accessToken) =>
+			{
+				return Requests.User.Get.Diagrams.EmployeesOnVacation.GetDiagram(db, logger, username, accessToken);
+			});
+
+		//Получение диаграммы со всеми командами и колчеством сотрудников в отпуске в заданном месяце (количество сотрудников на каждый день)
+		app.MapGet("/api/user/diagrams/employees-on-vacation/per-month/{month}/year/{year}/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string month, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.User.Get.Diagrams.EmployeesOnVacationPerMonth.GetDiagram(db, logger, month, year, username,
+					accessToken);
+			});
+
+		//Получение диаграммы со всеми командами и колчеством сотрудников в отпуске в заданном году (количество сотрудников на каждый месяц)
+		app.MapGet("/api/user/diagrams/employees-on-vacation/per-year/{year}/{username}/{password}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string year, string username, string accessToken) =>
+			{
+				return Requests.User.Get.Diagrams.EmployeesOnVacationPerYear.GetDiagram(db, logger, year, username, accessToken);
 			});
 
 		//Создание новой команды
@@ -163,13 +189,49 @@ public class RequestRouter
 		// 		return VacationAPI.Request.Teams.Get.TeamStats.PlannedVacations.GetTeamStats(db, logger, teamName, username, accessToken);
 		// 	});
 
+		//Получение диаграммы с сотрудниками команды в отпуске за заданный год по месяцам
+		app.MapGet("api/teams/{teamName}/diagrams/employees-on-vacation/per-year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.Diagrams.EmployeesOnVacationPerYear.GetDiagram(db, logger, teamName, year, username,
+					accessToken);
+			});
+
+		//Получение диаграммы с сотрудниками команды в отпуске за заданный месяц по дням
+		app.MapGet("api/teams/{teamName}/diagrams/employees-on-vacation/per-month/{month}/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string month, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.Diagrams.EmployeesOnVacationPerMonth.GetDiagram(db, logger, teamName, month, year, username,
+					accessToken);
+			});
+
+		//Получение диаграммы с количеством отпусков сотрудников в днях за год
+		app.MapGet("api/teams/{teamName}/diagrams/employee-vacations/per-year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.Diagrams.EmployeesOnVacationDaysCount.GetDiagramPerYear(db, logger, teamName, year, username,
+					accessToken);
+			});
+
+		//Получение диаграммы с количеством отпусков сотрудников в днях за месяц
+		app.MapGet("api/teams/{teamName}/diagrams/employee-vacations/per-month/{month}/year/{year}/{username}/{accessToken}",
+			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string month, string year, string username,
+			string accessToken) =>
+			{
+				return Requests.Teams.Get.Diagrams.EmployeesOnVacationDaysCount.GetDiagramPerMonth(db, logger, teamName, month, year, username,
+					accessToken);
+			});
+
 		//Изменение название команды
 		app.MapPut("api/teams/team/{teamName}/{newTeamName}/{username}/{accessToken}",
 			(ApplicationContext db, TeamValidator teamValidator, ILogger<RequestRouter> logger, string teamName, string newTeamName,
 			string username,
 			string accessToken) =>
 			{
-				return TeamName.EditTeamName(db, teamValidator, logger, teamName, newTeamName,
+				return Requests.Teams.Put.TeamName.EditTeamName(db, teamValidator, logger, teamName, newTeamName,
 					username,
 					accessToken);
 			});
@@ -178,7 +240,7 @@ public class RequestRouter
 		app.MapDelete("api/teams/team/{teamName}/{username}/{accessToken}",
 			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string username, string accessToken) =>
 			{
-				return Team.RemoveTeam(db, logger, teamName, username, accessToken);
+				return Requests.Teams.Delete.Team.RemoveTeam(db, logger, teamName, username, accessToken);
 			});
 
 		//Добавление работника
@@ -241,7 +303,7 @@ public class RequestRouter
 			(ApplicationContext db, ILogger<RequestRouter> logger, string teamName, string employeeName, string username,
 			string accessToken) =>
 			{
-				return Employee.RemoveEmployee(db, logger, teamName, employeeName, username,
+				return Requests.Employees.Delete.Employee.RemoveEmployee(db, logger, teamName, employeeName, username,
 					accessToken);
 			});
 

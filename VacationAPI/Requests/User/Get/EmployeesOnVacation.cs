@@ -35,6 +35,7 @@ public class EmployeesOnVacation
 
 			logger.LogInformation("Get info about user's employees on vacation: successfully");
 
+			//ответ в случае успеха
 			return Results.Json(response);
 		}
 
