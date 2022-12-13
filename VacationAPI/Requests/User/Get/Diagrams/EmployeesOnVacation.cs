@@ -34,7 +34,6 @@ public class EmployeesOnVacation
 				.cht("bvg") // vertical bar chart
 				.chs("700x450") //размер картинки
 				.chd("t:" + string.Join(",", teamsAndEmployees.Values)) //параметры каждого отдельного столбца
-				.chl(string.Join("|", teamsAndEmployees.Keys)) //текст в столбцах
 				.chf("b0,lg,90,05B142,1,0CE858,0.2")
 				.chxl("0:|" + string.Join("|", teamsAndEmployees.Keys) + "|") // подписи под столбцами
 				.chxt("x,y")

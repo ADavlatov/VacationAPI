@@ -31,8 +31,8 @@ public class EmployeesOnVacationPerMonth
 			for (int i = 1; i != daysInCurrentMonth; i++)
 			{
 				employeesCount[i] = employees.Count(x => x.Vacations.FirstOrDefault(y =>
-															y.StartOfVacation < DateOnly.Parse(i + "." + month + "." + year)
-															&& y.EndOfVacation > DateOnly.Parse(i + "." + month + "." + year))
+															y.StartOfVacation <= DateOnly.Parse(i + "." + month + "." + year)
+															&& y.EndOfVacation >= DateOnly.Parse(i + "." + month + "." + year))
 														!= null);
 			}
 
