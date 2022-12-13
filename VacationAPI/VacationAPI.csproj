@@ -4,6 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,7 +26,8 @@
 
     <ItemGroup>
       <Folder Include="Database" />
-      <Folder Include="Request\Teams" />
+      <Folder Include="Interfaces" />
+      <Folder Include="Requests\Employees\Get\Diagrams" />
     </ItemGroup>
 
 </Project>
